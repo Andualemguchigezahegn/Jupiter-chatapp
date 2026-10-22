@@ -4,51 +4,93 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jupiter Chat</title>
+    <meta
+      name="description"
+      content="Modern real-time online chat app for collaborative conversations."
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <h1>Jupiter</h1>
-          <span>Live Chat</span>
-        </div>
-
-        <div class="panel">
-          <h2>Online</h2>
-          <ul id="user-list" class="user-list"></ul>
-        </div>
-      </aside>
-
-      <main class="chat-panel">
-        <header class="chat-header">
+    <div class="page-shell">
+      <div class="auth-card" id="auth-card">
+        <div class="brand-block">
+          <div class="logo">J</div>
           <div>
-            <h2>Global Room</h2>
-            <p>Real-time conversations</p>
+            <p class="eyebrow">Welcome</p>
+            <h1>Jupiter Chat</h1>
           </div>
-        </header>
+        </div>
 
-        <div id="messages" class="messages" aria-live="polite"></div>
+        <form id="join-form" class="join-form">
+          <label>
+            <span>Username</span>
+            <input
+              id="username"
+              type="text"
+              maxlength="20"
+              placeholder="Enter your name"
+              autocomplete="off"
+              required
+            />
+          </label>
 
-        <form id="chat-form" class="chat-form">
-          <input
-            id="username"
-            type="text"
-            maxlength="20"
-            placeholder="Your name"
-            autocomplete="off"
-          />
-          <button type="button" id="join-btn">Join</button>
-          <input
-            id="message"
-            type="text"
-            maxlength="500"
-            placeholder="Type a message..."
-            autocomplete="off"
-          />
-          <button type="submit">Send</button>
+          <label>
+            <span>Room</span>
+            <input
+              id="room"
+              type="text"
+              maxlength="30"
+              value="general"
+              placeholder="general"
+              autocomplete="off"
+              required
+            />
+          </label>
+
+          <button type="submit" class="primary-btn">Join room</button>
         </form>
-      </main>
+      </div>
+
+      <div class="chat-app hidden" id="chat-app">
+        <aside class="sidebar">
+          <div class="room-header">
+            <p class="eyebrow">Active room</p>
+            <h2 id="room-name">#general</h2>
+          </div>
+
+          <div class="sidebar-box">
+            <div class="box-title-row">
+              <h3>Online</h3>
+            </div>
+            <ul id="user-list" class="user-list"></ul>
+          </div>
+        </aside>
+
+        <main class="chat-panel">
+          <header class="chat-header">
+            <div>
+              <p class="eyebrow">Conversation</p>
+              <h2 id="chat-title">General room</h2>
+            </div>
+            <button id="leave-room" class="ghost-btn" type="button">Leave</button>
+          </header>
+
+          <div id="messages" class="messages" aria-live="polite"></div>
+
+          <div id="typing-indicator" class="typing-indicator hidden">Someone is typing...</div>
+
+          <form id="chat-form" class="chat-form">
+            <input
+              id="message"
+              type="text"
+              placeholder="Type your message..."
+              autocomplete="off"
+              maxlength="500"
+            />
+            <button type="submit" class="primary-btn">Send</button>
+          </form>
+        </main>
+      </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

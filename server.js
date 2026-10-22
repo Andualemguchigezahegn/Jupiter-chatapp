@@ -5,71 +5,126 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
+});
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const users = new Map();
+const roomUsers = new Map();
+
+function sanitizeText(value, maxLength = 500) {
+  return String(value || '').trim().slice(0, maxLength);
+}
+
+function getRoomUsers(room) {
+  const roomMembers = io.sockets.adapter.rooms.get(room)?.members;
+  if (!roomMembers) return [];
+
+  const users = [];
+  for (const socketId of roomMembers) {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket && socket.username) {
+      users.push(socket.username);
+    }
+  }
+  return [...new Set(users)];
+}
+
+function broadcastRoomUsers(room) {
+  io.to(room).emit('user-list', getRoomUsers(room));
+}
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('User connected:', socket.id);
 
-  socket.on('join', ({ username }) => {
-    if (!username || !username.trim()) {
+  socket.on('join-room', ({ username, room }) => {
+    const safeUsername = sanitizeText(username, 20);
+    const safeRoom = sanitizeText(room, 30) || 'general';
+
+    if (!safeUsername) {
+      socket.emit('join-error', { message: 'Please enter a valid username.' });
       return;
     }
 
-    const cleanName = username.trim();
-    users.set(socket.id, cleanName);
-    socket.username = cleanName;
+    if (socket.room) {
+      socket.leave(socket.room);
+    }
 
-    socket.broadcast.emit('system-message', {
-      text: `${cleanName} joined the chat.`
+    socket.username = safeUsername;
+    socket.room = safeRoom;
+    socket.join(safeRoom);
+
+    socket.emit('joined-room', {
+      room: safeRoom,
+      username: safeUsername,
+      message: `You joined #${safeRoom}`
     });
 
-    socket.emit('welcome-message', {
-      text: `Welcome, ${cleanName}! You are now connected.`
+    socket.to(safeRoom).emit('system-message', {
+      text: `${safeUsername} joined the room.`
     });
 
-    io.emit('user-list', [...new Set([...users.values()])]);
+    broadcastRoomUsers(safeRoom);
   });
 
   socket.on('chat-message', (message) => {
-    const username = users.get(socket.id) || 'Anonymous';
-    const cleanMessage = (message || '').trim();
+    const room = socket.room;
+    const text = sanitizeText(message, 500);
 
-    if (!cleanMessage) {
+    if (!room || !text) {
       return;
     }
 
-    io.emit('chat-message', {
-      username,
-      text: cleanMessage,
+    const payload = {
+      username: socket.username || 'Anonymous',
+      text,
       time: new Date().toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit'
       })
+    };
+
+    io.to(room).emit('chat-message', payload);
+  });
+
+  socket.on('typing', ({ isTyping }) => {
+    const room = socket.room;
+    if (!room) return;
+
+    socket.to(room).emit('typing', {
+      username: socket.username || 'Someone',
+      isTyping: Boolean(isTyping)
     });
   });
 
   socket.on('disconnect', () => {
-    const username = users.get(socket.id);
-    if (username) {
-      socket.broadcast.emit('system-message', {
-        text: `${username} left the chat.`
+    const room = socket.room;
+    const username = socket.username;
+
+    if (room && username) {
+      socket.to(room).emit('system-message', {
+        text: `${username} left the room.`
       });
-      users.delete(socket.id);
-      io.emit('user-list', [...new Set([...users.values()])]);
+      broadcastRoomUsers(room);
     }
+
+    if (room) {
+      socket.leave(room);
+    }
+
+    console.log('User disconnected:', socket.id);
   });
 });
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Chat server is running.' });
+  res.json({ status: 'ok', message: 'Jupiter chat server is running.' });
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

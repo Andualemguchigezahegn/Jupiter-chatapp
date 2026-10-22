@@ -1,12 +1,14 @@
 # Jupiter Chat App
 
-A simple real-time online chat application built with Node.js, Express, and Socket.IO.
+A modern real-time online chat application built with Node.js, Express, and Socket.IO.
 
 ## Features
-- Real-time messaging between all connected users
+- Real-time messaging in shared rooms
+- Login screen with username and room selection
 - Live online user list
-- Simple and responsive chat UI
-- Works in the browser without a database
+- Typing indicator
+- Message timestamps
+- Modern glassmorphism-inspired interface
 
 ## Run locally
 
@@ -31,12 +33,36 @@ A simple real-time online chat application built with Node.js, Express, and Sock
 npm run dev
 ```
 
+## Deploying to a hosting service
+
+GitHub Pages is not suitable for a live Socket.IO chat backend because it only serves static files. For a real-time chat app, deploy the Express server to a Node hosting provider such as Render or Railway.
+
+### Example: Render
+
+1. Push this repo to GitHub.
+2. In Render, create a new Web Service and connect the repository.
+3. Set the build command:
+   ```bash
+   npm install
+   ```
+4. Set the start command:
+   ```bash
+   npm start
+   ```
+5. Render will expose the app publicly with a live URL.
+
+### Example: Railway
+
+1. Create a new project and connect the repo.
+2. Use the default Node build/start settings.
+3. Deploy and use the generated public URL.
+
 ## Project structure
 
-- `server.js` – Node server and Socket.IO event handling
-- `public/index.html` – Chat page layout
-- `public/styles.css` – Styling
-- `public/app.js` – Client-side chat logic
+- `server.js` – Express and Socket.IO server
+- `public/index.html` – login and chat layout
+- `public/styles.css` – design and responsive styling
+- `public/app.js` – client-side chat logic
 
 ## Notes
-This is a lightweight chat app for local development and learning. For production, you would usually add authentication, persistence, rooms, and a database.
+This is a lightweight chat app designed for learning and small-team communication. For production, you would usually add authentication, persistent message storage, moderation, and room management.
