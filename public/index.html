@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jupiter Chat</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>Jupiter</h1>
+          <span>Live Chat</span>
+        </div>
 
+        <div class="panel">
+          <h2>Online</h2>
+          <ul id="user-list" class="user-list"></ul>
+        </div>
+      </aside>
+
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div>
+            <h2>Global Room</h2>
+            <p>Real-time conversations</p>
+          </div>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite"></div>
+
+        <form id="chat-form" class="chat-form">
+          <input
+            id="username"
+            type="text"
+            maxlength="20"
+            placeholder="Your name"
+            autocomplete="off"
+          />
+          <button type="button" id="join-btn">Join</button>
+          <input
+            id="message"
+            type="text"
+            maxlength="500"
+            placeholder="Type a message..."
+            autocomplete="off"
+          />
+          <button type="submit">Send</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
